@@ -1,0 +1,43 @@
+# Environment
+.env
+.env.*
+
+# Virtual environment
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# VS Code
+.vscode/
+
+# Streamlit
+.streamlit/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.db
+
+# Build / dist
+dist/
+build/
+
+# Data & models (optional - only if large/private)
+data/
+models/
+
+# Node (frontend hai to)
+node_modules/
+
+# Misc
+*.sqlite3
