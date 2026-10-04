@@ -6,7 +6,7 @@ import io
 
 @st.dialog("Share Class Link")
 def share_subject_dialog(subject_name, subject_code):
-    app_domain = "http://localhost:8501/"
+    app_domain = "https://smart-attendance-system-7562.streamlit.app/"
     join_url = f"{app_domain}/?join-code={subject_code}"
 
     st.header("Scan to Join")
