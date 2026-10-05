@@ -55,12 +55,18 @@ def get_all_students():
     return response.data
 
 def create_student(new_name, face_embedding=None, voice_embedding=None):
-    data = {'name': new_name, 'face_embedding': face_embedding, 'face_embeddings_list': [face_embedding] if face_embedding else [], "voice_embedding": voice_embedding}
+    data_full = {'name': new_name, 'face_embedding': face_embedding, 'face_embeddings_list': [face_embedding] if face_embedding else [], "voice_embedding": voice_embedding}
     try:
-        response = supabase.table('students').insert(data).execute()
-    except RequestError as exc:
-        raise DatabaseConnectionError("Unable to reach Supabase right now.") from exc
-    return response.data
+        response = supabase.table('students').insert(data_full).execute()
+        return response.data
+    except Exception:
+        # Fallback for Supabase remote schemas where 'face_embeddings_list' column is missing
+        data_compat = {'name': new_name, 'face_embedding': face_embedding, "voice_embedding": voice_embedding}
+        try:
+            response = supabase.table('students').insert(data_compat).execute()
+            return response.data
+        except Exception as exc:
+            raise DatabaseConnectionError("Unable to reach database right now.") from exc
 
 def add_student_face_embedding(student_id, new_face_embedding):
     try:
@@ -81,8 +87,9 @@ def add_student_face_embedding(student_id, new_face_embedding):
         
         response = supabase.table('students').update({'face_embeddings_list': emb_list}).eq('student_id', student_id).execute()
         return response.data
-    except RequestError as exc:
-        raise DatabaseConnectionError("Unable to reach Supabase right now.") from exc
+    except Exception as exc:
+        print("Skipping multi-embedding update for remote schema:", exc)
+        return None
 
 
 def create_subject(subject_code, name, section, teacher_id):
