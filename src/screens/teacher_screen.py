@@ -5,7 +5,7 @@ from src.ui.base_layout import style_background_dashboard, style_base_layout
 from src.components.header import header_dashboard
 from src.components.footer import footer_dashboard
 from src.components.subject_card import subject_card
-from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_teacher_subjects, get_attendance_for_teacher, get_all_students
+from src.database.db import check_teacher_exists, create_teacher, teacher_login, get_teacher_subjects, get_attendance_for_teacher, get_all_students, delete_subject
 from src.components.dialog_create_subject import create_subject_dialog
 from src.components.dialog_share_subject import share_subject_dialog
 from src.components.dialog_add_photo import add_photos_dialog
@@ -210,28 +210,40 @@ def teacher_tab_manage_subjects():
         if st.button('Create New Subject', width='stretch'):
             create_subject_dialog(teacher_id)
 
-
-    # LIST all SUBJECTS
     subjects = get_teacher_subjects(teacher_id)
     if subjects:
-        for sub in subjects:
+        # Section Filter Dropdown
+        all_sections = sorted(list(set(str(s['section']) for s in subjects if s.get('section'))))
+        selected_sec = st.selectbox("🔍 Filter by Section", options=["All Sections"] + all_sections, key="manage_sec_filter")
+
+        filtered_subs = subjects
+        if selected_sec != "All Sections":
+            filtered_subs = [s for s in subjects if str(s.get('section')) == selected_sec]
+
+        for sub in filtered_subs:
             stats = [
                 ("🫂", "Students", sub['total_students']),
                 ("🕰️", "Classes", sub['total_classes']),
             ]
-            def make_share_btn(s):
-                def share_btn():
-                    if st.button(f"Share Code: {s['name']}", key=f"share_{s['subject_code']}", icon=":material/share:"):
-                        share_subject_dialog(s['name'], s['subject_code'])
-                    st.space()
-                return share_btn
+            def make_subject_footer(s):
+                def footer_buttons():
+                    btn_col1, btn_col2 = st.columns(2)
+                    with btn_col1:
+                        if st.button(f"Share Code: {s['name']}", key=f"share_{s['subject_code']}", icon=":material/share:", width="stretch"):
+                            share_subject_dialog(s['name'], s['subject_code'])
+                    with btn_col2:
+                        if st.button(f"Delete Subject", key=f"del_{s['subject_id']}", icon=":material/delete:", type="secondary", width="stretch"):
+                            delete_subject(s['subject_id'])
+                            st.toast(f"Deleted subject '{s['name']}' ({s['subject_code']})", icon="🗑️")
+                            st.rerun()
+                return footer_buttons
 
             subject_card(
-                name = sub['name'],
-                code = sub['subject_code'],
-                section = sub['section'],
+                name=sub['name'],
+                code=sub['subject_code'],
+                section=sub['section'],
                 stats=stats,
-                footer_callback=make_share_btn(sub)
+                footer_callback=make_subject_footer(sub)
             )
     else:
         st.info("NO SUBJECTS FOUND. CREATE ONE ABOVE")

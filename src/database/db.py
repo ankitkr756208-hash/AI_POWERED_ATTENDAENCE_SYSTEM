@@ -100,6 +100,16 @@ def create_subject(subject_code, name, section, teacher_id):
         raise DatabaseConnectionError("Unable to reach Supabase right now.") from exc
     return response.data
 
+def delete_subject(subject_id):
+    try:
+        supabase.table('attendance_logs').delete().eq('subject_id', subject_id).execute()
+        supabase.table('subject_students').delete().eq('subject_id', subject_id).execute()
+        response = supabase.table('subjects').delete().eq('subject_id', subject_id).execute()
+        return response.data
+    except Exception as exc:
+        print("Error deleting subject:", exc)
+        raise DatabaseConnectionError("Unable to delete subject right now.") from exc
+
 def get_teacher_subjects(teacher_id):
     try:
         response = supabase.table('subjects').select("*, subject_students(count), attendance_logs(timestamp)").eq("teacher_id", teacher_id).execute()
