@@ -11,6 +11,12 @@ report export.
 > probabilistic, so attendance records should be reviewed when
 > confidence is low.
 
+## 🌐 Live Demo
+
+Try the deployed application here:
+
+**[AI-Powered Attendance System — Live App](https://smart-attendance-system-7562.streamlit.app/)**
+
 ## ✨ Features
 
 ### 👤 Student Portal
